@@ -1,25 +1,49 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
+import { EditorState } from 'draft-js';
+import { Editor } from 'react-draft-wysiwyg';
+import { convertToHTML } from 'draft-convert';
+import DOMPurify from 'dompurify';
+import '../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import './App.css';
 
-function App() {
+const App = () =>{
+  const [editorState, setEditorState] = useState(
+    () => EditorState.createEmpty(),
+  );
+  const  [convertedContent, setConvertedContent] = useState(null);
+  
+  const handleEditorChange = (state) => {
+    setEditorState(state);
+    convertContentToHTML();
+  }
+
+  const convertContentToHTML = () => {
+    let currentContentAsHTML = convertToHTML(editorState.getCurrentContent());
+    setConvertedContent(currentContentAsHTML);
+  }
+
+  const createMarkup = (html) => {
+    return  {
+      __html: DOMPurify.sanitize(html)
+    }
+  }
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        DraftJs Text Editor &#9997; &#9996;
       </header>
+      <Editor
+        editorState={editorState}
+        onEditorStateChange={handleEditorChange}
+        wrapperClassName="wrapper-class"
+        editorClassName="editor-class"
+        toolbarClassName="toolbar-class"
+        placeholder="Start Typing Here....."
+      />
+      <div className="preview" dangerouslySetInnerHTML={createMarkup(convertedContent)}></div>
     </div>
-  );
+  )
 }
 
 export default App;
